@@ -60,3 +60,7 @@ plt.title("Spike Signal", fontweight = "bold")
 
 plt.tight_layout()
 plt.show()
+
+
+## Link to 30 min_0001.abf File
+# https://drive.google.com/file/d/1PT0PveyKpONEsi6cSepV6AiRQ5f_L-u9/view?usp=sharing
