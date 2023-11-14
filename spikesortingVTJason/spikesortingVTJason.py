@@ -2,6 +2,11 @@ import numpy as np
 import scipy.io
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
+
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
+
 # Load the mat data
 mat_data = scipy.io.loadmat('10 min recording1.mat')
 recording1 = mat_data['recording1'].flatten()
@@ -22,6 +27,7 @@ LFP = filtfilt(b, a, rawsignal) * 1000
 # Plot
 time = np.arange(0, len(spikes)) / fsSpikes
 
+
 plt.figure(figsize=(10, 6))
 plt.subplot(3, 1, 1)
 plt.plot(time, rawsignal)
@@ -37,6 +43,8 @@ plt.title('Filtered LFP')
 plt.xlabel('Time (s)')
 plt.tight_layout()
 plt.show()
+
+
 
 ## Shi section
 
@@ -70,43 +78,67 @@ for ii in range(1, len(end_spike_index)):
 
 spike_index = np.array(spike_index)
 
-
-# Delete the fake oscillation spike 
-import numpy as np
-
-deleteEv = []
-
-for i in range(len(spike_index)):
-    before = range(spike_index[i]-50, spike_index[i]-20,1)
-    after = range(spike_index[i]+20, spike_index[i]+50,1)
-    
-    #enumarate will return a tuple that contains index and value of each element 
-    beforeFind = [index for index, val in enumerate(spikes[before]) if val < -10 or val >25]
-    afterFind = [index for index, val in enumerate(spikes[after]) if val < -10 or val > 25]
-    
-    if len(beforeFind) > 1 or len(afterFind) > 1:
-        #deleteEv.append(i)
-        deleteEv[end_spike_index + 1] = i #n or end? 
-
-for i in deleteEv:
-    spike_index[i] = 0
-
-spike_index = [element for element in spike_index if element != 0]
-
-
 # Get the 3 ms spike cutout
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
 per = 50
 detected_spikes = spike_index
 num_spikes = len(detected_spikes)
-data = np.zeros((num_spikes,per))
+data = np.zeros((num_spikes, 2 * per + 1))
 
 start = np.zeros(num_spikes, dtype=int)
 stop = np.zeros(num_spikes, dtype=int)
 starttime = np.zeros(num_spikes, dtype=int)
 
 for i in range(num_spikes):
-    start[i] = detected_spikes[i]-per
-    stop[i] = start[i] + (2*per)
-    data[i][0:2*per+1] = spikes[start[i]:stop[i]+1]
-    starttime[i] = start[i]
+    start[i] = detected_spikes[i] - per
+    stop[i] = start[i] + (2 * per)
     
+    # Ensure that the size of 'spikes' is sufficient for the slicing operation
+    if start[i] >= 0 and stop[i] < len(spikes):
+        data[i][:] = spikes[start[i] : stop[i] + 1]
+    else:
+        # Handle the case where the slicing goes beyond the boundaries of 'spikes'
+        print(f"Skipping spike {i + 1} due to insufficient data.")
+        continue
+
+    starttime[i] = start[i]
+
+"""
+plt.figure(figsize=(10, 6))
+for i in range(num_spikes):
+    plt.plot(range(start[i], stop[i] + 1), spikes[start[i] : stop[i] + 1], label=f"Spike {i + 1}")
+
+plt.title("Detected Spikes and Data")
+plt.xlabel("Time")
+plt.ylabel("Amplitude")
+plt.legend()
+plt.show()
+"""
+
+"""
+# Delete the fake oscillation spike 
+import numpy as np
+
+deleteEv = []
+
+for i in range(len(spike_index)):
+    before = range(spike_index(i)-50, spike_index(i)-20,1)
+    after = range(spike_index(i)+20, spike_index(i)+50,1)
+    
+    #enumarate will return a tuple that contains index and value of each element 
+    beforeFind = [index for index, val in enumerate(spikes[before]) if val < -10 or val >25]
+    afterFind = [index for index, val in enumerate(spikes[after]) if val < -10 or val > 25]
+    
+    if len(beforeFind) > 1 or len(afterFind) > 1:
+        deleteEv[end + 1] = i
+
+for i in deleteEv:
+    spike_index[i] = 0
+
+spike_index = [element for element in spike_index if element != 0]
+
+"""
