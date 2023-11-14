@@ -100,6 +100,10 @@ detected_spikes = spike_index
 num_spikes = len(detected_spikes)
 data = np.zeros((num_spikes,per))
 
+start = np.zeros(num_spikes, dtype=int)
+stop = np.zeros(num_spikes, dtype=int)
+starttime = np.zeros(num_spikes, dtype=int)
+
 for i in range(num_spikes):
     start[i] = detected_spikes[i]-per
     stop[i] = start[i] + (2*per)
