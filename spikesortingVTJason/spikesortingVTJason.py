@@ -5,14 +5,18 @@ from scipy.signal import butter, filtfilt
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
-# Load the mat data
+## Load the recording data and select the part of interest
+# line 4
+
 mat_data = scipy.io.loadmat('10 min recording1.mat')
 recording1 = mat_data['recording1'].flatten()
 
 fsSpikes = 50000
 rawsignal = recording1[20 * fsSpikes:260 * fsSpikes]
 
-# Bandpass filter for Spikes and LFP
+## Bandpass filter for Spikes and LFP
+# line 9
+
 Fc1_spikes, Fc2_spikes = 300, 3000
 b_spikes, a_spikes = butter(4, [Fc1_spikes, Fc2_spikes], btype='band', fs=fsSpikes)
 spikes = filtfilt(b_spikes, a_spikes, rawsignal) * 1000
@@ -22,24 +26,28 @@ b_lfp, a_lfp = butter(2, [Fc1_lfp, Fc2_lfp], btype='band', fs=fsSpikes)
 LFP = filtfilt(b_lfp, a_lfp, rawsignal) * 1000
 
 # Plot
+# line 23
+
 time = np.arange(0, len(spikes)) / fsSpikes
 
 plt.figure(figsize=(10, 6))
 plt.subplot(3, 1, 1)
-plt.plot(time, rawsignal)
+plt.plot(time, rawsignal, linewidth=0.5)
 plt.title('Raw Signal')
 plt.subplot(3, 1, 2)
-plt.plot(time, spikes)
+plt.plot(time, spikes, linewidth=0.5)
 plt.title('Filtered Spikes')
 plt.subplot(3, 1, 3)
-plt.plot(time, LFP)
+plt.plot(time, LFP, linewidth=0.5)
 plt.title('Filtered LFP')
 
 plt.xlabel('Time (s)')
 plt.tight_layout()
 # plt.show()
 
-## Shi section
+
+## Detect the spike according to the threshold
+# line 33
 
 upper_threshold = -100
 threshold = -20
@@ -71,7 +79,9 @@ for ii in range(1, len(end_spike_index)):
 
 spike_index = np.array(spike_index)
 
-# Delete the fake oscillation spike 
+## Delete the fake oscillation spike 
+# line 67
+
 deleteEv = []
 
 for i in range(len(spike_index)):
@@ -89,7 +99,9 @@ for i in deleteEv:
 
 spike_index = [element for element in spike_index if element != 0]
 
-# Get the 3 ms spike cutout
+## Get the 3 ms spike cutout
+# line 82
+
 per = 50
 detected_spikes = spike_index
 num_spikes = len(detected_spikes)
@@ -105,23 +117,38 @@ for i in range(num_spikes):
     data[i][:] = spikes[start[i]:stop[i]]
     starttime[i] = start[i]
 
-#pca analysis
+
+## PCA analysis
+# line 95
+
+data = np.array(data)
+
+# Perform PCA on 'data'
+pca = PCA(n_components=3)  # Specify the number of components (3 in this case)
+coeff = pca.fit_transform(data)
+score = pca.components_
+ev = pca.explained_variance_
+
+# Calculate the mean of 'data'
+mu = np.mean(data, axis=0)
+
+# Select the first 3 principal components
+pcadata = coeff[:, :3]
 
 # plot data
 time = np.arange(0, 2 * per, 1 / fsSpikes) * 1000  
 
 plt.figure()
-plt.plot(time[:data.shape[1]], data.T)
+plt.plot(time[:data.shape[1]], data.T, linewidth = 0.5)
 plt.title('Spikes')
 plt.xlabel('Time (ms)')
 plt.ylabel('Voltage (mV)')
 plt.xlim(0, 2 * per * 1000 / fsSpikes)
 plt.grid(True)
 
-# line 112 
-desired_k = 3
+## line 107
 
-# Perform k-means clustering
+desired_k = 3
 kmeans = KMeans(n_clusters=desired_k, init='k-means++', n_init=desired_k + 6, random_state=42)
 kmeans.fit(data)
 IDX = kmeans.labels_
@@ -150,16 +177,13 @@ for i in range(desired_k):
     time = np.linspace(0, (2 * per) * 1e3 / fsSpikes, cluster_data.shape[1])
     # Plot each waveform in the cluster
     for waveform in cluster_data:
-        plt.plot(time, waveform, color=color_cluster[i])
+        plt.plot(time, waveform, color=color_cluster[i], linewidth=0.5)
 
 plt.title('Sorted Neuron Signals')
 plt.xlabel('Time (ms)')
 plt.ylabel('Voltage (mV)')
 
-# line 130
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
+## line 126
 
 for i in range(desired_k):
     plt.figure()
@@ -169,7 +193,7 @@ for i in range(desired_k):
     time = np.linspace(0, (2 * per) * 1e3 / fsSpikes, cluster_data.shape[1])
     # Plot each waveform in the cluster
     for waveform in cluster_data:
-        plt.plot(time, waveform, color=color_cluster[i])
+        plt.plot(time, waveform, color=color_cluster[i], linewidth=0.5)
     
     # Calculate the mean waveform for the current cluster
     meanofdata = np.mean(cluster_data, axis=0)
@@ -181,12 +205,85 @@ for i in range(desired_k):
     plt.ylabel('Voltage (µV)')
     plt.ylim([-70, 40])
 
+# plt.show()
 
-plt.show()
-# Perform PCA on the entire dataset
+# line 141
+
 pca = PCA(n_components=3)  # Adjust the number of components as necessary
 pca.fit(data)
 coeff = pca.components_
 score = pca.transform(data)
 ev = pca.explained_variance_
 
+## line 147
+mu = np.mean(data, axis=0)
+marker_neuron = ['o', '*', 's', 'x', 'd', 'p', '+', '.', 'v', '>']
+
+
+# Plotting PCA results
+fig, ax = plt.subplots()
+
+marker_size = 15
+
+for i in range(desired_k):
+    cluster_data = data[IDX == i]
+    neuron = (cluster_data - mu) @ coeff.T  # Transform to PCA space
+
+    ax.scatter(neuron[:, 0], neuron[:, 1], marker=marker_neuron[i], color=color_cluster[i], s=marker_size, facecolors='none',linewidths=0.5)
+
+ax.set_xlabel('PC1', fontsize=24)
+ax.set_ylabel('PC2', fontsize=24)
+ax.spines['bottom'].set_linewidth(2)
+ax.spines['left'].set_linewidth(2)
+ax.tick_params(axis='both', which='major', labelsize=16, width=2)
+
+plt.xlim(-200, 100)
+plt.ylim(-100, 100)
+# plt.show()
+
+# line 168
+
+firstcluster = int(input('Please enter the first wanted cluster: '))
+secondcluster = int(input('Please enter the second wanted cluster: '))
+
+spike_index = np.array(detected_spikes)
+IDX = np.array(IDX)
+
+plt.figure()
+hb1 = plt.subplot(2, 1, 1)
+plt.plot(np.arange(0, len(rawsignal))/fsSpikes, rawsignal, linewidth=1.3)
+plt.title('Spike Trace')
+plt.xlabel('Time (s)')
+plt.ylabel('Voltage (μV)')
+plt.gca().spines['bottom'].set_linewidth(2)
+plt.gca().spines['left'].set_linewidth(2)
+plt.gca().tick_params(axis='both', which='major', labelsize=16)
+
+timecluster_first = [index + 30 for index, cluster in zip(spike_index, IDX) if cluster == firstcluster]
+timecluster_second = [index + 30 for index, cluster in zip(spike_index, IDX) if cluster == secondcluster]
+
+timecluster_first = np.array(timecluster_first)
+timecluster_second = np.array(timecluster_second)
+
+plt.scatter(timecluster_first/fsSpikes, -900*np.ones(len(timecluster_first)), s=5, marker='^', 
+            facecolors=color_cluster[firstcluster], edgecolors=color_cluster[firstcluster], linewidth=0.5)
+plt.scatter(timecluster_second/fsSpikes, -900*np.ones(len(timecluster_second)), s=5, marker='^', 
+            facecolors=color_cluster[secondcluster], edgecolors=color_cluster[secondcluster], linewidth=0.5)
+
+hb2 = plt.subplot(2, 1, 2, sharex=hb1)
+plt.plot(np.arange(0, len(spikes))/fsSpikes, spikes, linewidth=1.5)
+plt.gca().spines['bottom'].set_linewidth(1.5)
+plt.gca().spines['left'].set_linewidth(1.5)
+
+timecluster_first = [index for index, cluster in zip(spike_index, IDX) if cluster == firstcluster]
+timecluster_second = [index for index, cluster in zip(spike_index, IDX) if cluster == secondcluster]
+
+timecluster_first = np.array(timecluster_first)
+timecluster_second = np.array(timecluster_second)
+
+plt.scatter(timecluster_first/fsSpikes, -60*np.ones(len(timecluster_first)), s=5, marker='^', 
+            facecolors=color_cluster[firstcluster], edgecolors=color_cluster[firstcluster], linewidth=0.5)
+plt.scatter(timecluster_second/fsSpikes, -60*np.ones(len(timecluster_second)), s=5, marker='^', 
+            facecolors=color_cluster[secondcluster], edgecolors=color_cluster[secondcluster], linewidth=0.5)
+
+plt.show()
