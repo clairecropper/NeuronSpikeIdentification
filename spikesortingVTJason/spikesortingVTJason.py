@@ -2,6 +2,8 @@ import numpy as np
 import scipy.io
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 
 # Load the mat data
 mat_data = scipy.io.loadmat('10 min recording1.mat')
@@ -35,7 +37,7 @@ plt.title('Filtered LFP')
 
 plt.xlabel('Time (s)')
 plt.tight_layout()
-plt.show()
+# plt.show()
 
 ## Shi section
 
@@ -103,6 +105,7 @@ for i in range(num_spikes):
     data[i][:] = spikes[start[i]:stop[i]]
     starttime[i] = start[i]
 
+#pca analysis
 
 # plot data
 time = np.arange(0, 2 * per, 1 / fsSpikes) * 1000  
@@ -114,5 +117,76 @@ plt.xlabel('Time (ms)')
 plt.ylabel('Voltage (mV)')
 plt.xlim(0, 2 * per * 1000 / fsSpikes)
 plt.grid(True)
+
+# line 112 
+desired_k = 3
+
+# Perform k-means clustering
+kmeans = KMeans(n_clusters=desired_k, init='k-means++', n_init=desired_k + 6, random_state=42)
+kmeans.fit(data)
+IDX = kmeans.labels_
+C = kmeans.cluster_centers_
+
+# Define colors for each cluster
+color_cluster = [
+    [0.259, 0.62, 0.741],
+    [0, 0, 1],
+    [1, 0, 1],
+    [0.949, 0.498, 0.047],
+    [1, 1, 0],
+    [0, 1, 1],
+    [0.5, 0, 1],
+    [0, 0.5, 1],
+    [1, 0.5, 0],
+    [1, 0, 0.5]
+]
+
+# Plot each cluster
+plt.figure()
+for i in range(desired_k):
+    # Select data for the current cluster
+    cluster_data = data[IDX == i, :]
+    # Time vector for plotting
+    time = np.linspace(0, (2 * per) * 1e3 / fsSpikes, cluster_data.shape[1])
+    # Plot each waveform in the cluster
+    for waveform in cluster_data:
+        plt.plot(time, waveform, color=color_cluster[i])
+
+plt.title('Sorted Neuron Signals')
+plt.xlabel('Time (ms)')
+plt.ylabel('Voltage (mV)')
+
+# line 130
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+for i in range(desired_k):
+    plt.figure()
+    # Select data for the current cluster
+    cluster_data = data[IDX == i, :]
+    # Time vector for plotting
+    time = np.linspace(0, (2 * per) * 1e3 / fsSpikes, cluster_data.shape[1])
+    # Plot each waveform in the cluster
+    for waveform in cluster_data:
+        plt.plot(time, waveform, color=color_cluster[i])
+    
+    # Calculate the mean waveform for the current cluster
+    meanofdata = np.mean(cluster_data, axis=0)
+    # Plot the mean waveform
+    plt.plot(time, meanofdata, 'k', linewidth=1.5)  # 'k' is for black color
+    
+    # plt.title(f'Sorted neuron signals cluster={i+1}')  # i+1 to convert from 0-based to 1-based indexing
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Voltage (µV)')
+    plt.ylim([-70, 40])
+
+
 plt.show()
+# Perform PCA on the entire dataset
+pca = PCA(n_components=3)  # Adjust the number of components as necessary
+pca.fit(data)
+coeff = pca.components_
+score = pca.transform(data)
+ev = pca.explained_variance_
 
