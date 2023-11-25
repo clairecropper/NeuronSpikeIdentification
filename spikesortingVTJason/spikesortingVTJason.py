@@ -231,6 +231,8 @@ for i in range(desired_k):
 
     ax.scatter(neuron[:, 0], neuron[:, 1], marker=marker_neuron[i], color=color_cluster[i], s=marker_size, facecolors='none',linewidths=0.5)
 
+print(neuron.shape)
+
 ax.set_xlabel('PC1', fontsize=24)
 ax.set_ylabel('PC2', fontsize=24)
 ax.spines['bottom'].set_linewidth(2)
@@ -287,3 +289,4 @@ plt.scatter(timecluster_second/fsSpikes, -60*np.ones(len(timecluster_second)), s
             facecolors=color_cluster[secondcluster], edgecolors=color_cluster[secondcluster], linewidth=0.5)
 
 plt.show()
+
