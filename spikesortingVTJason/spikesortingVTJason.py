@@ -257,6 +257,9 @@ plt.scatter(range(len(IDX)), IDX)
 firstcluster = int(input('Please enter the first wanted cluster: '))
 secondcluster = int(input('Please enter the second wanted cluster: '))
 
+firstcluster = firstcluster - 1
+secondcluster = secondcluster - 1
+
 spike_index = np.array(detected_spikes)
 IDX = np.array(IDX)
 
