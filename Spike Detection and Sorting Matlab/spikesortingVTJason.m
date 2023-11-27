@@ -196,9 +196,6 @@ scatter(timecluster{i}/fsSpikes,-60*ones(1,length(timecluster{i})),5,'^','Marker
 
 linkaxes([hb(1),hb(2)], 'x');
 
-%% hao & shi 
-
-%{
 figure
 time = 1/fsSpikes:1/fsSpikes:60;
 trace = spikes(1:60*fsSpikes);
@@ -266,4 +263,3 @@ MD=sort(d2);
 ID=MD(min(length(clusterone(:,1)),length(clustertwo(:,2))));
 p = chi2cdf(MD,3);
 Lratio=sum(1.-p)/length(clusterone(:,1));
-%}
