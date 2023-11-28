@@ -7,13 +7,11 @@ arguments
     doPlot (1,1) logical = true
 end
 
-dat = load(file, "recording1");
-recording1 = dat.recording1;
-clear('dat')
 
-fsSpikes=50000;
 per=50;
-rawsignal = recording1(20*fsSpikes:260*fsSpikes);
+fsSpikes=50000;
+
+rawsignal = select_signal(file, fsSpikes);
 
 %% Bandpass filter (BPF) for Spikes and LFP
 
