@@ -1,5 +1,7 @@
 numpy
-scipy
-h5py
-scikit-learn
 matplotlib
+h5py
+scipy
+scikit-learn
+pyabf
+tk
