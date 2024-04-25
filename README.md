@@ -13,19 +13,7 @@ Shi Gu (bengushi@bu.edu)
 Chen Yang, PhD (cheyang@bu.edu)\
 Vikrant Sharma (vikrant@bu.edu)
 
-### Description of the Technical Problem:
-We propose developing two machine learning algorithms that accurately identify neuron spikes in electrophysiology data such as LFP recordings. Neuron spikes indicate neural activity and offer clues about resting state connectivity and stimulus response, offering insights into understanding brain function. One algorithm will work retrospectively for analysis after experiment. The second algorithm will work in real-time for real-time spike recordings (RTsr) for data collection validation. This project aims to leverage machine learning techniques to automate and enhance retrospective and real time spike identification in complex electrophysiological recordings. 
+### Abstract:
+Epilepsy, a prevalent neurological disorder, impacts millions globally. Despite the array of treatments available, a significant number of patients remain non-responsive. This project involves the development of a machine learning algorithm using PCA and optimized K-means that will accurately detect and identify the brain activity, or neuron spikes, that indicate active seizure activity. The creation of an app front-end allows for the seizure activity to be visualized, for any relevant parameters to be adjusted as necessary either as a method for analysis following the collection.
 
-### Methodology:
-1. Identify robust public datasets of labeled electrophysiology data containing spike and non-spike segments.
-2. Create preprocessing techniques to clean and transform raw public data into appropriate features for machine learning.
-3. Design, train and optimize retrospective machine learning model such that performance (F1, accuracy, precision, recall) is similar to or better than conventional spike labeling models.
-4. Evaluate and optimize machine learning model for data collected at Chen Yang Lab.
-5. Develop app front-end for visualizing detected spikes and changing parameters
-6. Repeat 1-5 for RTsr (5 being optional for RTsr)
-
-### Expected Deliverables at the end of the course:
-​Python software that accepts raw electrophysiology data and outputs labeled spike-trains and neuron clusters with confidence of labeling.\
-​App front-end for visualizing spikes and altering parameters (such as clustering conductivity thresholds, accepted sensitivity, etc.).\
-​Python software that accepts RTsr and labels spike-trains + neuron clusters in real time.\
-​App front-end for real-time electrophysiology model (optional)
+More information of the project can be found in the [Documentation](Documentation) folder.
