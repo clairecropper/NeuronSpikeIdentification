@@ -7,9 +7,9 @@ Make sure you have Python version 3.8.1 or higher
 
 Running terminal or powershell and direct to the folder path. Use the following command to download the package needed for this project:
 
-'''
+```
 pip install -r requirements.txt
-'''
+```
 
 The environment should be good to use. We strongly suggest building a virtual environment for this project to avoid accidents or conflicts when configuring the environment.
 
